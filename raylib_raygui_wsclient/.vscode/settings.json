@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "*.C": "c",
+        "raygui.h": "c",
+        "*.m": "c"
+    }
+}

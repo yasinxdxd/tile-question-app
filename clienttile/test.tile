@@ -1,0 +1,88 @@
+MAX_MSG_LEN: int = 32;
+
+func print(str: string): void {
+    tasm {
+        "load 0",
+        "puts"
+    }
+}
+
+func printchararray(str: char[]): void {
+    tasm {
+        "load 0",
+        "deref",
+        "puts"
+    }
+}
+
+func print_char(c: char): void {
+    tasm {
+        "load 0",
+        "putc"
+    }
+}
+
+func print_int(num: int): void {
+    if (num == 0) {
+        print("0\n");
+        return;
+    }
+
+    if (num < 0) {
+        print("-");
+        num = -num;
+    }
+
+    // Store digits in reverse
+    buffer: char[] = char[32];
+    
+    i: int = 0;
+    while (num > 0) {
+        buffer[i] = (num % 10) + (int)'0';
+        num = num / 10;
+        i = i + 1;
+    }
+
+    // Print digits in correct order
+    for (j: int = i - 1; j >= 0; j--) {
+        print_char(buffer[j]);
+    }
+    print_char((char)10);
+}
+
+func as_carray(arr: int[]): void {
+    tasm {
+        "load 0",
+        "deref"
+    }
+}
+
+func main(argc: int): void {
+
+    recv_buf: char[] = char[MAX_MSG_LEN];
+    for (int i = 0; i < MAX_MSG_LEN; i++) {
+        recv_buf[i] = (char)0;
+    }
+
+    recv_buf[0] = 'A';
+    recv_buf[1] = 'B';
+
+    // print_int((int)(recv_buf[0]));
+
+    // recv_buf[0] = (int)recv_buf[0] << 1;
+    // recv_buf[0] = (int)recv_buf[0] >> 1;
+    
+    printchararray(recv_buf);
+    print("\n");
+    print_char(recv_buf[0]);
+    print("\n");
+    print_int((char)recv_buf[0]);
+    print("\n");
+    
+    if (recv_buf[0] == 'A') {
+        print("YES!\n");
+    } else {
+        print("NO!\n");
+    }
+
+}

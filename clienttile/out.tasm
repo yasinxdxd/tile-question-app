@@ -1,0 +1,236 @@
+; program begins
+jmp __start
+
+proc func_print_
+    store 0 ; param string str
+    load 0 ; unsafe tasm statement
+    puts ; unsafe tasm statement
+    ret
+endp
+
+proc func_printchararray_
+    store 0 ; param char[] str
+    load 0 ; unsafe tasm statement
+    deref ; unsafe tasm statement
+    puts ; unsafe tasm statement
+    ret
+endp
+
+proc func_print_char_
+    store 0 ; param char c
+    load 0 ; unsafe tasm statement
+    putc ; unsafe tasm statement
+    ret
+endp
+
+proc func_print_int_
+    store 0 ; param int num
+; if begin
+    load 0
+    push 0
+    eq
+    jz _1_0else0
+    aloadc 0 ; "0\n"
+    call func_print_
+    ret
+    jmp _1exit0
+_1_0else0: 
+_1exit0: 
+; if end
+; if begin
+    load 0
+    push 0
+    lt
+    jz _1_1else0
+    aloadc 2 ; "-"
+    call func_print_
+    push 0
+    load 0
+    sub
+    store 0 ; int num
+    jmp _1exit1
+_1_1else0: 
+_1exit1: 
+; if end
+    ; sized arr initializer
+    push 32
+    push 1
+    mult
+    push 0
+    halloc
+    store 1 ; char[] buffer
+    push 0
+    store 2 ; int i
+    load 0
+    push 0
+    gt
+jz _1while_end0
+_1while0:
+    load 0
+    push 10
+    mod
+    push '0'
+    add
+    load 1
+    load 2
+    push 1
+    hset
+    load 0
+    push 10
+    div
+    store 0 ; int num
+    load 2
+    push 1
+    add
+    store 2 ; int i
+    load 0
+    push 0
+    gt
+jnz _1while0
+_1while_end0:
+    load 2
+    push 1
+    sub
+    store 3 ; int j
+    load 3
+    push 0
+    ge
+jz _1for_end0
+_1for0:
+    load 1
+    deref ; dereferance
+    load 3
+    push 1
+    mult
+    add
+    derefb 1 ; dereferance
+    call func_print_char_
+    load 3
+    dec ; --
+    store 3
+    load 3
+    pop
+    load 3
+    push 0
+    ge
+jnz _1for0
+_1for_end0:
+    push 10
+    call func_print_char_
+    ret
+endp
+
+proc func_as_carray_
+    store 0 ; param int[] arr
+    load 0 ; unsafe tasm statement
+    deref ; unsafe tasm statement
+    ret
+endp
+
+proc func_main_
+    store 0 ; param int argc
+    ; sized arr initializer
+    gload 0
+    push 1
+    mult
+    push 0
+    halloc
+    store 1 ; char[] recv_buf
+    push 0
+    store 2 ; int i
+    load 2
+    gload 0
+    lt
+jz _1for_end1
+_1for1:
+    push 0
+    load 1
+    load 2
+    push 1
+    hset
+    load 2
+    inc ; ++
+    store 2
+    load 2
+    pop
+    load 2
+    gload 0
+    lt
+jnz _1for1
+_1for_end1:
+    push 'A'
+    load 1
+    push 0
+    push 1
+    hset
+    push 'B'
+    load 1
+    push 1
+    push 1
+    hset
+    load 1
+    call func_printchararray_
+    aloadc 4 ; "\n"
+    call func_print_
+    load 1
+    deref ; dereferance
+    push 0
+    push 1
+    mult
+    add
+    derefb 1 ; dereferance
+    call func_print_char_
+    aloadc 4 ; "\n"
+    call func_print_
+    load 1
+    deref ; dereferance
+    push 0
+    push 1
+    mult
+    add
+    derefb 1 ; dereferance
+    call func_print_int_
+    aloadc 4 ; "\n"
+    call func_print_
+; if begin
+    load 1
+    deref ; dereferance
+    push 0
+    push 1
+    mult
+    add
+    derefb 1 ; dereferance
+    push 'A'
+    eq
+    jz _1_2else0
+    aloadc 6 ; "YES!\n"
+    call func_print_
+    jmp _1exit2
+_1_2else0: 
+    aloadc 8 ; "NO!\n"
+    call func_print_
+_1exit2: 
+; if end
+    ret
+endp
+
+__start:
+; global variables
+    push 32
+    gstore 0 ; int MAX_MSG_LEN
+
+
+push 0 ; argc
+call func_main_
+
+hlt
+@data "0\n"
+@data 0x003
+@data "-"
+@data 0x001
+@data "\n"
+@data 0x002
+@data "YES!\n"
+@data 0x006
+@data "NO!\n"
+@data 0x005

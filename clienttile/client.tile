@@ -1,0 +1,232 @@
+/*
+    04.18.2025
+    Muhammed Yasinhan Yaşar
+*/
+
+native func InitWindow(width: ci32, height: ci32, title: cptr): cvoid;
+native func WindowShouldClose(): ci8;
+native func CloseWindow(): cvoid;
+native func BeginDrawing(): cvoid;
+native func EndDrawing(): cvoid;
+native func ClearBackground(color: cu32): cvoid;
+native func SetTargetFPS(fps: ci32): cvoid;
+native func GetFrameTime(): cf32;
+native func DrawRectangle(posX: ci32, posY: ci32, width: ci32, height: ci32, color: cu32): cvoid;
+native func DrawCircle(posX: ci32, posY: ci32, radius: cf32, color: cu32): cvoid;
+native func DrawLine(ci32, ci32, ci32, ci32, cu32): cvoid;
+native func IsKeyDown(key: ci16): ci8;
+native func DrawText(text: cptr, posX: ci32, posY: ci32, fontSize: ci32, color: cu64): cvoid;
+
+
+native func SetRandomSeed(seed: cu32): cvoid;
+native func GetRandomValue(min: ci32, max: ci32): ci32;
+
+native func GuiButtonTile(x: cf32, y: cf32, sx: cf32, sy: cf32, title: cptr): ci32;
+native func GuiTextBoxTile(x: cf32, y: cf32, sx: cf32, sy: cf32, text: cptr, textSize: ci32, editMode: ci8): ci32;
+native func GuiSetStyle(control: ci32, property: ci32, value: ci32): cvoid;
+
+
+native func wsclient_init(): ci8;
+native func wsclient_connect(hostname: cptr, port: cptr): ci8;
+native func wsclient_is_connected(): ci8;
+native func wsclient_send(message: cptr): ci32;
+native func wsclient_poll(buffer: cptr, buflen: cu64): ci32;
+native func wsclient_disconnect(): cvoid;
+
+func printchr(c: char): void {
+    tasm {
+        "load 0",
+        "putc"
+    }
+}
+
+func print(str: string): void {
+    tasm {
+        "load 0",
+        "puts"
+    }
+}
+
+func printcarr(str: char[]): void {
+    tasm {
+        "load 0",
+        "deref",
+        "puts"
+    }
+}
+
+func as_carray(arr: int[]): void {
+    tasm {
+        "load 0",
+        "deref"
+    }
+}
+
+func strlen(str: char[]): int {
+    len: int = 0;
+    for (i: int = 0; str[i] == (char)0; i++) {
+       len = i;
+    }
+    return len;
+}
+
+func check_char(buff: char[], idx: int, chr: char): bool {
+    printchr(buff[idx]);
+
+    printchr(buff[idx]);
+    if (buff[idx] == chr) {
+        print("YES!\n");
+        return true;
+    }
+    print("NO!\n");
+    return false;
+}
+
+func check_OKOK(buff: char[]): bool {
+    bool result = true;
+    result = result && buff.check_char(0, 'O');
+    result = result && buff.check_char(1, 'K');
+    result = result && buff.check_char(2, 'O');
+    result = result && buff.check_char(3, 'K');
+    return result;
+}
+
+func check_XEND(buff: char[]): bool {
+    bool result = true;
+    result = result && buff.check_char(0, 'X');
+    result = result && buff.check_char(1, 'E');
+    result = result && buff.check_char(2, 'N');
+    result = result && buff.check_char(3, 'D');
+    return result;
+}
+
+MAX_MSG_LEN: int = 256;
+MAX_MSG_CHC_LEN: int = 32;
+
+message: char[] = char[MAX_MSG_LEN];
+recv_buf: char[] = char[MAX_MSG_LEN];
+
+func seperate_lines_chrarr_then_draw(buff: char[]): void {
+    DrawText(buff.as_carray(), 30, 30, 14, 0xFFFFFFFF);
+    message[1] = (char)0;
+    if ((bool)GuiButtonTile(50.0, 150.0, 50.0, 50.0, "A")) {
+        if ((bool)wsclient_is_connected()) {
+            message[0] = 'A';
+            wsclient_send(message.as_carray());
+        }
+    }
+    if ((bool)GuiButtonTile(100.0, 150.0, 50.0, 50.0, "B")) {
+        if ((bool)wsclient_is_connected()) {
+            message[0] = 'B';
+            wsclient_send(message.as_carray());
+        }
+    }
+    if ((bool)GuiButtonTile(150.0, 150.0, 50.0, 50.0, "C")) {
+        if ((bool)wsclient_is_connected()) {
+            message[0] = 'C';
+            wsclient_send(message.as_carray());
+        }
+    }
+    if ((bool)GuiButtonTile(200.0, 150.0, 50.0, 50.0, "D")) {
+        if ((bool)wsclient_is_connected()) {
+            message[0] = 'D';
+            wsclient_send(message.as_carray());
+        }
+    }
+}
+
+screenWidth: int = 600;
+screenHeight: int = screenWidth;
+
+DEFAULT: int = 0;
+TEXT_SIZE: int = 16;
+
+GAME_STATE_JOIN:    int = 0;
+GAME_STATE_WAITING: int = 1;
+GAME_STATE_GAME:    int = 2;
+GAME_STATE_END:     int = 3;
+game_state:         int = GAME_STATE_JOIN;
+
+func run_game(): void {
+
+    if ((bool)wsclient_init() == false) {
+        return;
+    }
+    if ((bool)wsclient_connect("127.0.0.1", "7777") == false) {
+        return;
+    }
+
+    
+    // Initialize buffers
+    for (int i = 0; i < MAX_MSG_LEN; i++) {
+        message[i] = (char)0;
+        recv_buf[i] = (char)0;
+    }
+
+
+    while (!(bool)WindowShouldClose()) {  // ESC closes the window as well
+        // recive messages
+        int bytes = wsclient_poll(recv_buf.as_carray(), MAX_MSG_LEN - 1);
+        if (bytes > 0 && bytes < MAX_MSG_LEN) {
+            recv_buf[bytes] = 0;
+        }
+
+        BeginDrawing();
+            ClearBackground(0x509936FF);
+
+            if (game_state == GAME_STATE_JOIN) {
+                GuiSetStyle(DEFAULT, TEXT_SIZE, 24);
+                if ((bool)GuiTextBoxTile(50.0, 50.0, 300.0, 100.0, message.as_carray(), MAX_MSG_LEN, true)) { }
+
+                GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
+                if ((bool)GuiButtonTile(150.0, 150.0, 100.0, 50.0, "Join The Game")) {
+                    if ((bool)wsclient_is_connected()) {
+                        wsclient_send(message.as_carray());
+                        message[0] = 0;
+                        game_state = GAME_STATE_WAITING;
+                        wsclient_send("READY");
+                        recv_buf[0] = 0;
+                    }
+                }
+            } else if (game_state == GAME_STATE_WAITING) {
+                DrawText("Waiting!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
+                if (check_OKOK(recv_buf)) { // is it "OKOK"
+                    game_state = GAME_STATE_GAME;
+                    recv_buf[0] = 0;
+                    print("GAME_STATE_YES\n");
+                } else {
+                    printcarr(recv_buf);
+                }
+            } else if (game_state == GAME_STATE_GAME) {
+                DrawText("GAME!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
+                // DrawText(recv_buf.as_carray(), 30, 30, 14, 0xFFFFFFFF);
+
+                seperate_lines_chrarr_then_draw(recv_buf);
+
+                if (check_XEND(recv_buf)) { // is it "XEND"
+                    game_state = GAME_STATE_END;
+                    print("GAME_STATE_END\n");
+                }
+            } else if (game_state == GAME_STATE_END) {
+                DrawText("GAME OVER!!!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
+                
+            }
+
+            // DrawText(recv_buf.as_carray(), 30, 30, 10, 0xFFFFFFFF);
+
+        EndDrawing();
+    }
+}
+
+
+func main(argc: int): void {
+
+    InitWindow(screenWidth, screenHeight, "TCP Client");
+    SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
+
+    run_game();
+
+    // De-Initialization
+    wsclient_disconnect();
+    CloseWindow();
+}
