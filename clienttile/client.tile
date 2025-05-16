@@ -223,7 +223,7 @@ func run_game(): void {
         }
 
         BeginDrawing();
-            ClearBackground(0x509936FF);
+            ClearBackground(0x222e27FF);
 
             if (game_state == GAME_STATE_JOIN) {
                 GuiSetStyle(DEFAULT, TEXT_SIZE, 24);

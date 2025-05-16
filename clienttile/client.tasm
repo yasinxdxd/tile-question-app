@@ -571,7 +571,7 @@ _2_14else0:
 _2exit14: 
 ; if end
     native 3 ; BeginDrawing
-    push 0x509936FF
+    push 0x222e27FF
     native 5 ; ClearBackground
 ; if begin
     gload 13
