@@ -47,6 +47,103 @@ proc func_printcarr_
     ret
 endp
 
+proc func_print_int_
+    store 0 ; param int num
+; if begin
+    load 0
+    push 0
+    eq
+    jz _1_0else0
+    aloadc 0 ; "0\n"
+    call func_print_
+    ret
+    jmp _1exit0
+_1_0else0: 
+_1exit0: 
+; if end
+; if begin
+    load 0
+    push 0
+    lt
+    jz _1_1else0
+    aloadc 2 ; "-"
+    call func_print_
+    push 0
+    load 0
+    sub
+    store 0 ; int num
+    jmp _1exit1
+_1_1else0: 
+_1exit1: 
+; if end
+    ; sized arr initializer
+    push 32
+    push 1
+    mult
+    push 0
+    halloc
+    store 1 ; char[] buffer
+    push 0
+    store 2 ; int i
+    load 0
+    push 0
+    gt
+jz _1while_end0
+_1while0:
+    load 0
+    push 10
+    mod
+    push '0'
+    add
+    load 1
+    load 2
+    push 1
+    hset
+    load 0
+    push 10
+    div
+    store 0 ; int num
+    load 2
+    push 1
+    add
+    store 2 ; int i
+    load 0
+    push 0
+    gt
+jnz _1while0
+_1while_end0:
+    load 2
+    push 1
+    sub
+    store 3 ; int j
+    load 3
+    push 0
+    ge
+jz _1for_end0
+_1for0:
+    load 1
+    deref ; dereferance
+    load 3
+    push 1
+    mult
+    add
+    derefb 1 ; dereferance
+    call func_printchr_
+    load 3
+    dec ; --
+    store 3
+    load 3
+    pop
+    load 3
+    push 0
+    ge
+jnz _1for0
+_1for_end0:
+    push 10
+    call func_printchr_
+    ret
+endp
+
 proc func_as_carray_
     store 0 ; param int[] arr
     load 0 ; unsafe tasm statement
@@ -69,8 +166,8 @@ proc func_strlen_
     derefb 1 ; dereferance
     push 0
     eq
-jz _1for_end0
-_1for0:
+jz _1for_end1
+_1for1:
     load 2
     store 1 ; int len
     load 2
@@ -87,8 +184,8 @@ _1for0:
     derefb 1 ; dereferance
     push 0
     eq
-jnz _1for0
-_1for_end0:
+jnz _1for1
+_1for_end1:
     load 1
     ret
 endp
@@ -97,22 +194,6 @@ proc func_check_char_
     store 2 ; param char chr
     store 1 ; param int idx
     store 0 ; param char[] buff
-    load 0
-    deref ; dereferance
-    load 1
-    push 1
-    mult
-    add
-    derefb 1 ; dereferance
-    call func_printchr_
-    load 0
-    deref ; dereferance
-    load 1
-    push 1
-    mult
-    add
-    derefb 1 ; dereferance
-    call func_printchr_
 ; if begin
     load 0
     deref ; dereferance
@@ -123,18 +204,64 @@ proc func_check_char_
     derefb 1 ; dereferance
     load 2
     eq
-    jz _1_0else0
-    aloadc 0 ; "YES!\n"
-    call func_print_
+    jz _1_2else0
     push 1
     ret
-    jmp _1exit0
-_1_0else0: 
-_1exit0: 
+    jmp _1exit2
+_1_2else0: 
+_1exit2: 
 ; if end
-    aloadc 2 ; "NO!\n"
-    call func_print_
     push 0
+    ret
+endp
+
+proc func_check_QSTART_
+    store 0 ; param char[] buff
+    push 1
+    store 1 ; bool result
+    load 1
+    load 0
+    push 0
+    push 'Q'
+    call func_check_char_
+    and
+    store 1 ; bool result
+    load 1
+    load 0
+    push 1
+    push 'S'
+    call func_check_char_
+    and
+    store 1 ; bool result
+    load 1
+    load 0
+    push 2
+    push 'T'
+    call func_check_char_
+    and
+    store 1 ; bool result
+    load 1
+    load 0
+    push 3
+    push 'A'
+    call func_check_char_
+    and
+    store 1 ; bool result
+    load 1
+    load 0
+    push 4
+    push 'R'
+    call func_check_char_
+    and
+    store 1 ; bool result
+    load 1
+    load 0
+    push 5
+    push 'T'
+    call func_check_char_
+    and
+    store 1 ; bool result
+    load 1
     ret
 endp
 
@@ -225,16 +352,21 @@ proc func_seperate_lines_chrarr_then_draw_
     push 1
     hset
 ; if begin
+    gload 4
+    push 0
+    eq
+    jz _1_3else0
+; if begin
     push 50.0
     push 150.0
     push 50.0
     push 50.0
     aloadc 4 ; "A"
     native 15 ; GuiButtonTile
-    jz _1_1else0
+    jz _2_3else0
 ; if begin
     native 20 ; wsclient_is_connected
-    jz _2_1else0
+    jz _3_3else0
     push 'A'
     gload 2
     push 0
@@ -243,13 +375,15 @@ proc func_seperate_lines_chrarr_then_draw_
     gload 2
     call func_as_carray_
     native 21 ; wsclient_send
-    jmp _2exit1
-_2_1else0: 
-_2exit1: 
+    push 1
+    gstore 4 ; bool has_answered
+    jmp _3exit3
+_3_3else0: 
+_3exit3: 
 ; if end
-    jmp _1exit1
-_1_1else0: 
-_1exit1: 
+    jmp _2exit3
+_2_3else0: 
+_2exit3: 
 ; if end
 ; if begin
     push 100.0
@@ -258,10 +392,10 @@ _1exit1:
     push 50.0
     aloadc 6 ; "B"
     native 15 ; GuiButtonTile
-    jz _1_3else0
+    jz _2_5else0
 ; if begin
     native 20 ; wsclient_is_connected
-    jz _2_3else0
+    jz _3_5else0
     push 'B'
     gload 2
     push 0
@@ -270,13 +404,15 @@ _1exit1:
     gload 2
     call func_as_carray_
     native 21 ; wsclient_send
-    jmp _2exit3
-_2_3else0: 
-_2exit3: 
+    push 1
+    gstore 4 ; bool has_answered
+    jmp _3exit5
+_3_5else0: 
+_3exit5: 
 ; if end
-    jmp _1exit3
-_1_3else0: 
-_1exit3: 
+    jmp _2exit5
+_2_5else0: 
+_2exit5: 
 ; if end
 ; if begin
     push 150.0
@@ -285,10 +421,10 @@ _1exit3:
     push 50.0
     aloadc 8 ; "C"
     native 15 ; GuiButtonTile
-    jz _1_5else0
+    jz _2_7else0
 ; if begin
     native 20 ; wsclient_is_connected
-    jz _2_5else0
+    jz _3_7else0
     push 'C'
     gload 2
     push 0
@@ -297,13 +433,15 @@ _1exit3:
     gload 2
     call func_as_carray_
     native 21 ; wsclient_send
-    jmp _2exit5
-_2_5else0: 
-_2exit5: 
+    push 1
+    gstore 4 ; bool has_answered
+    jmp _3exit7
+_3_7else0: 
+_3exit7: 
 ; if end
-    jmp _1exit5
-_1_5else0: 
-_1exit5: 
+    jmp _2exit7
+_2_7else0: 
+_2exit7: 
 ; if end
 ; if begin
     push 200.0
@@ -312,10 +450,10 @@ _1exit5:
     push 50.0
     aloadc 10 ; "D"
     native 15 ; GuiButtonTile
-    jz _1_7else0
+    jz _2_9else0
 ; if begin
     native 20 ; wsclient_is_connected
-    jz _2_7else0
+    jz _3_9else0
     push 'D'
     gload 2
     push 0
@@ -324,14 +462,32 @@ _1exit5:
     gload 2
     call func_as_carray_
     native 21 ; wsclient_send
-    jmp _2exit7
-_2_7else0: 
-_2exit7: 
+    push 1
+    gstore 4 ; bool has_answered
+    jmp _3exit9
+_3_9else0: 
+_3exit9: 
 ; if end
-    jmp _1exit7
-_1_7else0: 
-_1exit7: 
+    jmp _2exit9
+_2_9else0: 
+_2exit9: 
 ; if end
+    jmp _1exit3
+_1_3else0: 
+_1exit3: 
+; if end
+    ret
+endp
+
+proc func_print_scores_
+    store 0 ; param char[] buff
+    load 0
+    call func_as_carray_
+    push 30
+    push 30
+    push 14
+    push 0xFFFFFFFF
+    native 12 ; DrawText
     ret
 endp
 
@@ -340,11 +496,11 @@ proc func_run_game_
     native 18 ; wsclient_init
     push 0
     eq
-    jz _1_9else0
+    jz _1_12else0
     ret
-    jmp _1exit9
-_1_9else0: 
-_1exit9: 
+    jmp _1exit12
+_1_12else0: 
+_1exit12: 
 ; if end
 ; if begin
     aloadc 12 ; "127.0.0.1"
@@ -352,19 +508,19 @@ _1exit9:
     native 19 ; wsclient_connect
     push 0
     eq
-    jz _1_10else0
+    jz _1_13else0
     ret
-    jmp _1exit10
-_1_10else0: 
-_1exit10: 
+    jmp _1exit13
+_1_13else0: 
+_1exit13: 
 ; if end
     push 0
     store 0 ; int i
     load 0
     gload 0
     lt
-jz _1for_end1
-_1for1:
+jz _1for_end2
+_1for2:
     push 0
     gload 2
     load 0
@@ -383,12 +539,12 @@ _1for1:
     load 0
     gload 0
     lt
-jnz _1for1
-_1for_end1:
+jnz _1for2
+_1for_end2:
     native 1 ; WindowShouldClose
     not ; !
-jz _1while_end0
-_1while0:
+jz _1while_end1
+_1while1:
     gload 3
     call func_as_carray_
     gload 0
@@ -404,26 +560,26 @@ _1while0:
     gload 0
     lt
     and
-    jz _2_11else0
+    jz _2_14else0
     push 0
     gload 3
     load 1
     push 1
     hset
-    jmp _2exit11
-_2_11else0: 
-_2exit11: 
+    jmp _2exit14
+_2_14else0: 
+_2exit14: 
 ; if end
     native 3 ; BeginDrawing
     push 0x509936FF
     native 5 ; ClearBackground
 ; if begin
-    gload 12
-    gload 8
+    gload 13
+    gload 9
     eq
-    jz _2_12else0
-    gload 6
+    jz _2_15else0
     gload 7
+    gload 8
     push 24
     native 17 ; GuiSetStyle
 ; if begin
@@ -436,13 +592,13 @@ _2exit11:
     gload 0
     push 1
     native 16 ; GuiTextBoxTile
-    jz _3_12else0
-    jmp _3exit12
-_3_12else0: 
-_3exit12: 
+    jz _3_15else0
+    jmp _3exit15
+_3_15else0: 
+_3exit15: 
 ; if end
-    gload 6
     gload 7
+    gload 8
     push 16
     native 17 ; GuiSetStyle
 ; if begin
@@ -452,10 +608,10 @@ _3exit12:
     push 50.0
     aloadc 16 ; "Join The Game"
     native 15 ; GuiButtonTile
-    jz _3_13else0
+    jz _3_16else0
 ; if begin
     native 20 ; wsclient_is_connected
-    jz _4_13else0
+    jz _4_16else0
     gload 2
     call func_as_carray_
     native 21 ; wsclient_send
@@ -464,8 +620,8 @@ _3exit12:
     push 0
     push 1
     hset
-    gload 9
-    gstore 12 ; int game_state
+    gload 10
+    gstore 13 ; int game_state
     aloadc 18 ; "READY"
     native 21 ; wsclient_send
     push 0
@@ -473,27 +629,27 @@ _3exit12:
     push 0
     push 1
     hset
-    jmp _4exit13
-_4_13else0: 
-_4exit13: 
+    jmp _4exit16
+_4_16else0: 
+_4exit16: 
 ; if end
-    jmp _3exit13
-_3_13else0: 
-_3exit13: 
+    jmp _3exit16
+_3_16else0: 
+_3exit16: 
 ; if end
-    jmp _2exit12
-_2_12else0: 
-    gload 12
-    gload 9
+    jmp _2exit15
+_2_15else0: 
+    gload 13
+    gload 10
     eq
-    jz _2_12else1
+    jz _2_15else1
     aloadc 20 ; "Waiting!"
-    gload 4
+    gload 5
     push 2
     div
     push 50
     sub
-    gload 5
+    gload 6
     push 2
     div
     push 36
@@ -502,88 +658,112 @@ _2_12else0:
 ; if begin
     gload 3
     call func_check_OKOK_
-    jz _3_16else0
-    gload 10
-    gstore 12 ; int game_state
+    jz _3_19else0
+    gload 11
+    gstore 13 ; int game_state
     push 0
     gload 3
     push 0
     push 1
     hset
-    aloadc 22 ; "GAME_STATE_YES\n"
-    call func_print_
-    jmp _3exit16
-_3_16else0: 
-    gload 3
-    call func_printcarr_
-_3exit16: 
-; if end
-    jmp _2exit12
-_2_12else1: 
-    gload 12
-    gload 10
-    eq
-    jz _2_12else2
-    aloadc 24 ; "GAME!"
-    gload 4
-    push 2
-    div
-    push 50
-    sub
-    gload 5
-    push 2
-    div
-    push 36
-    push 0xFFFFFFFF
-    native 12 ; DrawText
-    gload 3
-    call func_seperate_lines_chrarr_then_draw_
-; if begin
-    gload 3
-    call func_check_XEND_
-    jz _3_19else0
-    gload 11
-    gstore 12 ; int game_state
-    aloadc 26 ; "GAME_STATE_END\n"
-    call func_print_
     jmp _3exit19
 _3_19else0: 
 _3exit19: 
 ; if end
-    jmp _2exit12
-_2_12else2: 
-    gload 12
+    jmp _2exit15
+_2_15else1: 
+    gload 13
     gload 11
     eq
-    jz _2_12else3
-    aloadc 28 ; "GAME OVER!!!"
-    gload 4
+    jz _2_15else2
+    aloadc 22 ; "GAME!"
+    gload 5
     push 2
     div
     push 50
     sub
-    gload 5
+    gload 6
     push 2
     div
     push 36
     push 0xFFFFFFFF
     native 12 ; DrawText
-    jmp _2exit12
-_2_12else3: 
-_2exit12: 
+; if begin
+    gload 3
+    call func_check_QSTART_
+    jz _3_22else0
+    push 0
+    gstore 4 ; bool has_answered
+    aloadc 24 ; "qstart: "
+    call func_print_
+    gload 4
+    call func_print_int_
+    push ' '
+    gload 3
+    push 0
+    push 1
+    hset
+    push ' '
+    gload 3
+    push 1
+    push 1
+    hset
+    push ' '
+    gload 3
+    push 2
+    push 1
+    hset
+    push ' '
+    gload 3
+    push 3
+    push 1
+    hset
+    push ' '
+    gload 3
+    push 4
+    push 1
+    hset
+    jmp _3exit22
+_3_22else0: 
+    gload 3
+    call func_check_XEND_
+    jz _3_22else1
+    gload 12
+    gstore 13 ; int game_state
+    aloadc 26 ; "GAME_STATE_END\n"
+    call func_print_
+    aloadc 28 ; "DONE"
+    native 21 ; wsclient_send
+    jmp _3exit22
+_3_22else1: 
+_3exit22: 
+; if end
+    gload 3
+    call func_seperate_lines_chrarr_then_draw_
+    jmp _2exit15
+_2_15else2: 
+    gload 13
+    gload 12
+    eq
+    jz _2_15else3
+    gload 3
+    call func_print_scores_
+    jmp _2exit15
+_2_15else3: 
+_2exit15: 
 ; if end
     native 4 ; EndDrawing
     native 1 ; WindowShouldClose
     not ; !
-jnz _1while0
-_1while_end0:
+jnz _1while1
+_1while_end1:
     ret
 endp
 
 proc func_main_
     store 0 ; param int argc
-    gload 4
     gload 5
+    gload 6
     aloadc 30 ; "TCP Client"
     native 0 ; InitWindow
     push 60
@@ -614,34 +794,36 @@ __start:
     push 0
     halloc
     gstore 3 ; char[] recv_buf
+    push 0
+    gstore 4 ; bool has_answered
     push 600
-    gstore 4 ; int screenWidth
-    gload 4
-    gstore 5 ; int screenHeight
+    gstore 5 ; int screenWidth
+    gload 5
+    gstore 6 ; int screenHeight
     push 0
-    gstore 6 ; int DEFAULT
+    gstore 7 ; int DEFAULT
     push 16
-    gstore 7 ; int TEXT_SIZE
+    gstore 8 ; int TEXT_SIZE
     push 0
-    gstore 8 ; int GAME_STATE_JOIN
+    gstore 9 ; int GAME_STATE_JOIN
     push 1
-    gstore 9 ; int GAME_STATE_WAITING
+    gstore 10 ; int GAME_STATE_WAITING
     push 2
-    gstore 10 ; int GAME_STATE_GAME
+    gstore 11 ; int GAME_STATE_GAME
     push 3
-    gstore 11 ; int GAME_STATE_END
-    gload 8
-    gstore 12 ; int game_state
+    gstore 12 ; int GAME_STATE_END
+    gload 9
+    gstore 13 ; int game_state
 
 
 push 0 ; argc
 call func_main_
 
 hlt
-@data "YES!\n"
-@data 0x006
-@data "NO!\n"
-@data 0x005
+@data "0\n"
+@data 0x003
+@data "-"
+@data 0x001
 @data "A"
 @data 0x001
 @data "B"
@@ -660,13 +842,13 @@ hlt
 @data 0x005
 @data "Waiting!"
 @data 0x008
-@data "GAME_STATE_YES\n"
-@data 0x0010
 @data "GAME!"
 @data 0x005
+@data "qstart: "
+@data 0x008
 @data "GAME_STATE_END\n"
 @data 0x0010
-@data "GAME OVER!!!"
-@data 0x00c
+@data "DONE"
+@data 0x004
 @data "TCP Client"
 @data 0x00a

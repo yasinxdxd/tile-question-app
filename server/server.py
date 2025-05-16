@@ -2,7 +2,7 @@
 # referance: https://docs.python.org/3/howto/sockets.html
 # server
 import socket
-from threading import Thread
+from threading import Thread, Lock
 import time
 
 from data import question_next
@@ -19,9 +19,20 @@ class Server:
         self.host = HOST
         self.id_counter = 0
         self.minimum_client_count = 2
-        self.next_question = False
-        self.minimum_client_count = 1
+        self.minimum_client_count = 3
         self.current_question = None
+
+        self.next_question = False
+        self.answers_received = 0
+        self.lock = Lock()
+
+    def calculate_scores(self):
+        sorted_clients = sorted(self.clients, key=lambda c: c['score'], reverse=True)
+        res = "SCORES:\n"
+        for c in sorted_clients:
+            res += c['name'] + ": " + str(c['score']) + "\n"
+        
+        return res
 
 
     def listen(self): # main thread
@@ -34,7 +45,7 @@ class Server:
 
             # first ask for client to say his name on the client side
             client_name = client_sock.recv(MAX_MSG_LEN).decode() # we need to decode it because it is raw bytes
-            client = {'id': self.id_counter, 'name': client_name, 'socket': client_sock, 'score': 0}
+            client = {'id': self.id_counter, 'name': client_name, 'socket': client_sock, 'score': 0, 'answered': False}
             self.id_counter += 1
 
             print(f"{client_name} joined to game!")
@@ -59,6 +70,8 @@ class Server:
                 try:
                     qd = next(question_next)
                     self.current_question = qd
+                    self.brodcast_message("QSTART")
+                    # client_sock.
                     question = qd['content'] + "\n"
                     A = "A) " + qd['choices'][0]['A'] + "\n"
                     B = "B) " + qd['choices'][1]['B'] + "\n"
@@ -77,7 +90,8 @@ class Server:
                     break
         
         # GAME_STATE_END
-
+        msg = self.calculate_scores()
+        self.brodcast_message(msg)
 
 
     def handle_new_client(self, client):
@@ -108,15 +122,26 @@ class Server:
                 client_answer = client_sock.recv(MAX_MSG_LEN).decode()
                 end = time.time()
                 print("Client answered:", client_answer)
-                if self.current_question:
+                if client_answer == "DONE":
+                    msg = self.calculate_scores()
+                    client_sock.send(msg.encode())
+                    break
+                if self.current_question and not client['answered']:
                     if client_answer == self.current_question['answer']:
                         client['score'] += 10
+                    client['answered'] = True
             except socket.timeout:
                 end = time.time()
                 print("No answer received in time.")
             finally:
                 print("elapsed time: ", end - start)
-                self.next_question = True
+                with self.lock:
+                    self.answers_received += 1
+                    if self.answers_received == len(self.clients):
+                        self.next_question = True
+                        self.answers_received = 0
+                        for c in self.clients:
+                            c['answered'] = False
 
 
     def brodcast_message(self, message: str):

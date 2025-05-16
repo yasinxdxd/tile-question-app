@@ -55,6 +55,34 @@ func printcarr(str: char[]): void {
     }
 }
 
+func print_int(num: int): void {
+    if (num == 0) {
+        print("0\n");
+        return;
+    }
+
+    if (num < 0) {
+        print("-");
+        num = -num;
+    }
+
+    // Store digits in reverse
+    buffer: char[] = char[32];
+    
+    i: int = 0;
+    while (num > 0) {
+        buffer[i] = (num % 10) + (int)'0';
+        num = num / 10;
+        i = i + 1;
+    }
+
+    // Print digits in correct order
+    for (j: int = i - 1; j >= 0; j--) {
+        printchr(buffer[j]);
+    }
+    printchr((char)10);
+}
+
 func as_carray(arr: int[]): void {
     tasm {
         "load 0",
@@ -71,15 +99,26 @@ func strlen(str: char[]): int {
 }
 
 func check_char(buff: char[], idx: int, chr: char): bool {
-    printchr(buff[idx]);
+    // printchr(buff[idx]);
 
-    printchr(buff[idx]);
+    // printchr(buff[idx]);
     if (buff[idx] == chr) {
-        print("YES!\n");
+        // print("YES!\n");
         return true;
     }
-    print("NO!\n");
+    // print("NO!\n");
     return false;
+}
+
+func check_QSTART(buff: char[]): bool {
+    bool result = true;
+    result = result && buff.check_char(0, 'Q');
+    result = result && buff.check_char(1, 'S');
+    result = result && buff.check_char(2, 'T');
+    result = result && buff.check_char(3, 'A');
+    result = result && buff.check_char(4, 'R');
+    result = result && buff.check_char(5, 'T');
+    return result;
 }
 
 func check_OKOK(buff: char[]): bool {
@@ -106,33 +145,45 @@ MAX_MSG_CHC_LEN: int = 32;
 message: char[] = char[MAX_MSG_LEN];
 recv_buf: char[] = char[MAX_MSG_LEN];
 
+has_answered: bool = false;
+
 func seperate_lines_chrarr_then_draw(buff: char[]): void {
     DrawText(buff.as_carray(), 30, 30, 14, 0xFFFFFFFF);
     message[1] = (char)0;
-    if ((bool)GuiButtonTile(50.0, 150.0, 50.0, 50.0, "A")) {
-        if ((bool)wsclient_is_connected()) {
-            message[0] = 'A';
-            wsclient_send(message.as_carray());
+    if (has_answered == false) {
+        if ((bool)GuiButtonTile(50.0, 150.0, 50.0, 50.0, "A")) {
+            if ((bool)wsclient_is_connected()) {
+                message[0] = 'A';
+                wsclient_send(message.as_carray());
+                has_answered = true;
+            }
+        }
+        if ((bool)GuiButtonTile(100.0, 150.0, 50.0, 50.0, "B")) {
+            if ((bool)wsclient_is_connected()) {
+                message[0] = 'B';
+                wsclient_send(message.as_carray());
+                has_answered = true;
+            }
+        }
+        if ((bool)GuiButtonTile(150.0, 150.0, 50.0, 50.0, "C")) {
+            if ((bool)wsclient_is_connected()) {
+                message[0] = 'C';
+                wsclient_send(message.as_carray());
+                has_answered = true;
+            }
+        }
+        if ((bool)GuiButtonTile(200.0, 150.0, 50.0, 50.0, "D")) {
+            if ((bool)wsclient_is_connected()) {
+                message[0] = 'D';
+                wsclient_send(message.as_carray());
+                has_answered = true;
+            }
         }
     }
-    if ((bool)GuiButtonTile(100.0, 150.0, 50.0, 50.0, "B")) {
-        if ((bool)wsclient_is_connected()) {
-            message[0] = 'B';
-            wsclient_send(message.as_carray());
-        }
-    }
-    if ((bool)GuiButtonTile(150.0, 150.0, 50.0, 50.0, "C")) {
-        if ((bool)wsclient_is_connected()) {
-            message[0] = 'C';
-            wsclient_send(message.as_carray());
-        }
-    }
-    if ((bool)GuiButtonTile(200.0, 150.0, 50.0, 50.0, "D")) {
-        if ((bool)wsclient_is_connected()) {
-            message[0] = 'D';
-            wsclient_send(message.as_carray());
-        }
-    }
+}
+
+func print_scores(buff: char[]): void {
+    DrawText(buff.as_carray(), 30, 30, 14, 0xFFFFFFFF);
 }
 
 screenWidth: int = 600;
@@ -193,23 +244,37 @@ func run_game(): void {
                 if (check_OKOK(recv_buf)) { // is it "OKOK"
                     game_state = GAME_STATE_GAME;
                     recv_buf[0] = 0;
-                    print("GAME_STATE_YES\n");
+                    // print("GAME_STATE_YES\n");
                 } else {
-                    printcarr(recv_buf);
+                    // printcarr(recv_buf);
                 }
             } else if (game_state == GAME_STATE_GAME) {
                 DrawText("GAME!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
                 // DrawText(recv_buf.as_carray(), 30, 30, 14, 0xFFFFFFFF);
+                if (check_QSTART(recv_buf)) {
+                    has_answered = false; // New question
+                    // print("QSTART_YES\n");
+                    print("qstart: ");
+                    print_int((int)has_answered);
 
-                seperate_lines_chrarr_then_draw(recv_buf);
+                    /* weird hack */
+                    {
+                        recv_buf[0] = ' ';
+                        recv_buf[1] = ' ';
+                        recv_buf[2] = ' ';
+                        recv_buf[3] = ' ';
+                        recv_buf[4] = ' ';
+                    }
 
-                if (check_XEND(recv_buf)) { // is it "XEND"
+                } else if (check_XEND(recv_buf)) {
                     game_state = GAME_STATE_END;
                     print("GAME_STATE_END\n");
+                    wsclient_send("DONE");
+                } else {
                 }
+                seperate_lines_chrarr_then_draw(recv_buf); // Pass recv_buf as-is
             } else if (game_state == GAME_STATE_END) {
-                DrawText("GAME OVER!!!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
-                
+                print_scores(recv_buf);
             }
 
             // DrawText(recv_buf.as_carray(), 30, 30, 10, 0xFFFFFFFF);
