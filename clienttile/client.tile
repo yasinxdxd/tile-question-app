@@ -24,7 +24,7 @@ native func GetRandomValue(min: ci32, max: ci32): ci32;
 native func GuiButtonTile(x: cf32, y: cf32, sx: cf32, sy: cf32, title: cptr): ci32;
 native func GuiTextBoxTile(x: cf32, y: cf32, sx: cf32, sy: cf32, text: cptr, textSize: ci32, editMode: ci8): ci32;
 native func GuiSetStyle(control: ci32, property: ci32, value: ci32): cvoid;
-
+native func GuiLoadStyle(path: cptr): cvoid; // "styles\\candy\\candy.rgs"
 
 native func wsclient_init(): ci8;
 native func wsclient_connect(hostname: cptr, port: cptr): ci8;
@@ -183,11 +183,11 @@ func seperate_lines_chrarr_then_draw(buff: char[]): void {
 }
 
 func print_scores(buff: char[]): void {
-    DrawText(buff.as_carray(), 30, 30, 14, 0xFFFFFFFF);
+    DrawText(buff.as_carray(), 220, 80, 36, 0xFFFFFFFF);
 }
 
 screenWidth: int = 600;
-screenHeight: int = screenWidth;
+screenHeight: int = 300;
 
 DEFAULT: int = 0;
 TEXT_SIZE: int = 16;
@@ -240,7 +240,7 @@ func run_game(): void {
                     }
                 }
             } else if (game_state == GAME_STATE_WAITING) {
-                DrawText("Waiting!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
+                DrawText("Waiting for at least 3 players to come!", 36, screenHeight / 2, 28, 0xFFFFFFFF);
                 if (check_OKOK(recv_buf)) { // is it "OKOK"
                     game_state = GAME_STATE_GAME;
                     recv_buf[0] = 0;
@@ -249,7 +249,7 @@ func run_game(): void {
                     // printcarr(recv_buf);
                 }
             } else if (game_state == GAME_STATE_GAME) {
-                DrawText("GAME!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
+                // DrawText("GAME!", screenWidth / 2 - 50, screenHeight / 2, 36, 0xFFFFFFFF);
                 // DrawText(recv_buf.as_carray(), 30, 30, 14, 0xFFFFFFFF);
                 if (check_QSTART(recv_buf)) {
                     has_answered = false; // New question
@@ -264,6 +264,7 @@ func run_game(): void {
                         recv_buf[2] = ' ';
                         recv_buf[3] = ' ';
                         recv_buf[4] = ' ';
+                        recv_buf[5] = ' ';
                     }
 
                 } else if (check_XEND(recv_buf)) {
@@ -271,8 +272,9 @@ func run_game(): void {
                     print("GAME_STATE_END\n");
                     wsclient_send("DONE");
                 } else {
-                }
+
                 seperate_lines_chrarr_then_draw(recv_buf); // Pass recv_buf as-is
+                }
             } else if (game_state == GAME_STATE_END) {
                 print_scores(recv_buf);
             }
@@ -288,6 +290,8 @@ func main(argc: int): void {
 
     InitWindow(screenWidth, screenHeight, "TCP Client");
     SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
+
+    GuiLoadStyle("style_dark.rgs");
 
     run_game();
 

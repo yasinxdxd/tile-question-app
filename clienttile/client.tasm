@@ -19,6 +19,7 @@ jmp __start
 @cfun i32 GuiButtonTile f32 f32 f32 f32 ptr 
 @cfun i32 GuiTextBoxTile f32 f32 f32 f32 ptr i32 i8 
 @cfun void GuiSetStyle i32 i32 i32 
+@cfun void GuiLoadStyle ptr 
 @cfun i8 wsclient_init 
 @cfun i8 wsclient_connect ptr ptr 
 @cfun i8 wsclient_is_connected 
@@ -365,7 +366,7 @@ proc func_seperate_lines_chrarr_then_draw_
     native 15 ; GuiButtonTile
     jz _2_3else0
 ; if begin
-    native 20 ; wsclient_is_connected
+    native 21 ; wsclient_is_connected
     jz _3_3else0
     push 'A'
     gload 2
@@ -374,7 +375,7 @@ proc func_seperate_lines_chrarr_then_draw_
     hset
     gload 2
     call func_as_carray_
-    native 21 ; wsclient_send
+    native 22 ; wsclient_send
     push 1
     gstore 4 ; bool has_answered
     jmp _3exit3
@@ -394,7 +395,7 @@ _2exit3:
     native 15 ; GuiButtonTile
     jz _2_5else0
 ; if begin
-    native 20 ; wsclient_is_connected
+    native 21 ; wsclient_is_connected
     jz _3_5else0
     push 'B'
     gload 2
@@ -403,7 +404,7 @@ _2exit3:
     hset
     gload 2
     call func_as_carray_
-    native 21 ; wsclient_send
+    native 22 ; wsclient_send
     push 1
     gstore 4 ; bool has_answered
     jmp _3exit5
@@ -423,7 +424,7 @@ _2exit5:
     native 15 ; GuiButtonTile
     jz _2_7else0
 ; if begin
-    native 20 ; wsclient_is_connected
+    native 21 ; wsclient_is_connected
     jz _3_7else0
     push 'C'
     gload 2
@@ -432,7 +433,7 @@ _2exit5:
     hset
     gload 2
     call func_as_carray_
-    native 21 ; wsclient_send
+    native 22 ; wsclient_send
     push 1
     gstore 4 ; bool has_answered
     jmp _3exit7
@@ -452,7 +453,7 @@ _2exit7:
     native 15 ; GuiButtonTile
     jz _2_9else0
 ; if begin
-    native 20 ; wsclient_is_connected
+    native 21 ; wsclient_is_connected
     jz _3_9else0
     push 'D'
     gload 2
@@ -461,7 +462,7 @@ _2exit7:
     hset
     gload 2
     call func_as_carray_
-    native 21 ; wsclient_send
+    native 22 ; wsclient_send
     push 1
     gstore 4 ; bool has_answered
     jmp _3exit9
@@ -483,9 +484,9 @@ proc func_print_scores_
     store 0 ; param char[] buff
     load 0
     call func_as_carray_
-    push 30
-    push 30
-    push 14
+    push 220
+    push 80
+    push 36
     push 0xFFFFFFFF
     native 12 ; DrawText
     ret
@@ -493,7 +494,7 @@ endp
 
 proc func_run_game_
 ; if begin
-    native 18 ; wsclient_init
+    native 19 ; wsclient_init
     push 0
     eq
     jz _1_12else0
@@ -505,7 +506,7 @@ _1exit12:
 ; if begin
     aloadc 12 ; "127.0.0.1"
     aloadc 14 ; "7777"
-    native 19 ; wsclient_connect
+    native 20 ; wsclient_connect
     push 0
     eq
     jz _1_13else0
@@ -550,7 +551,7 @@ _1while1:
     gload 0
     push 1
     sub
-    native 22 ; wsclient_poll
+    native 23 ; wsclient_poll
     store 1 ; int bytes
 ; if begin
     load 1
@@ -610,11 +611,11 @@ _3exit15:
     native 15 ; GuiButtonTile
     jz _3_16else0
 ; if begin
-    native 20 ; wsclient_is_connected
+    native 21 ; wsclient_is_connected
     jz _4_16else0
     gload 2
     call func_as_carray_
-    native 21 ; wsclient_send
+    native 22 ; wsclient_send
     push 0
     gload 2
     push 0
@@ -623,7 +624,7 @@ _3exit15:
     gload 10
     gstore 13 ; int game_state
     aloadc 18 ; "READY"
-    native 21 ; wsclient_send
+    native 22 ; wsclient_send
     push 0
     gload 3
     push 0
@@ -643,16 +644,12 @@ _2_15else0:
     gload 10
     eq
     jz _2_15else1
-    aloadc 20 ; "Waiting!"
-    gload 5
-    push 2
-    div
-    push 50
-    sub
+    aloadc 20 ; "Waiting for at least 3 players to come!"
+    push 36
     gload 6
     push 2
     div
-    push 36
+    push 28
     push 0xFFFFFFFF
     native 12 ; DrawText
 ; if begin
@@ -676,25 +673,13 @@ _2_15else1:
     gload 11
     eq
     jz _2_15else2
-    aloadc 22 ; "GAME!"
-    gload 5
-    push 2
-    div
-    push 50
-    sub
-    gload 6
-    push 2
-    div
-    push 36
-    push 0xFFFFFFFF
-    native 12 ; DrawText
 ; if begin
     gload 3
     call func_check_QSTART_
     jz _3_22else0
     push 0
     gstore 4 ; bool has_answered
-    aloadc 24 ; "qstart: "
+    aloadc 22 ; "qstart: "
     call func_print_
     gload 4
     call func_print_int_
@@ -723,6 +708,11 @@ _2_15else1:
     push 4
     push 1
     hset
+    push ' '
+    gload 3
+    push 5
+    push 1
+    hset
     jmp _3exit22
 _3_22else0: 
     gload 3
@@ -730,16 +720,16 @@ _3_22else0:
     jz _3_22else1
     gload 12
     gstore 13 ; int game_state
-    aloadc 26 ; "GAME_STATE_END\n"
+    aloadc 24 ; "GAME_STATE_END\n"
     call func_print_
-    aloadc 28 ; "DONE"
-    native 21 ; wsclient_send
+    aloadc 26 ; "DONE"
+    native 22 ; wsclient_send
     jmp _3exit22
 _3_22else1: 
-_3exit22: 
-; if end
     gload 3
     call func_seperate_lines_chrarr_then_draw_
+_3exit22: 
+; if end
     jmp _2exit15
 _2_15else2: 
     gload 13
@@ -764,12 +754,14 @@ proc func_main_
     store 0 ; param int argc
     gload 5
     gload 6
-    aloadc 30 ; "TCP Client"
+    aloadc 28 ; "TCP Client"
     native 0 ; InitWindow
     push 60
     native 6 ; SetTargetFPS
+    aloadc 30 ; "style_dark.rgs"
+    native 18 ; GuiLoadStyle
     call func_run_game_
-    native 23 ; wsclient_disconnect
+    native 24 ; wsclient_disconnect
     native 2 ; CloseWindow
     ret
 endp
@@ -798,7 +790,7 @@ __start:
     gstore 4 ; bool has_answered
     push 600
     gstore 5 ; int screenWidth
-    gload 5
+    push 300
     gstore 6 ; int screenHeight
     push 0
     gstore 7 ; int DEFAULT
@@ -840,10 +832,8 @@ hlt
 @data 0x00d
 @data "READY"
 @data 0x005
-@data "Waiting!"
-@data 0x008
-@data "GAME!"
-@data 0x005
+@data "Waiting for at least 3 players to come!"
+@data 0x0027
 @data "qstart: "
 @data 0x008
 @data "GAME_STATE_END\n"
@@ -852,3 +842,5 @@ hlt
 @data 0x004
 @data "TCP Client"
 @data 0x00a
+@data "style_dark.rgs"
+@data 0x00e
