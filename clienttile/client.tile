@@ -145,7 +145,7 @@ MAX_MSG_CHC_LEN: int = 32;
 message: char[] = char[MAX_MSG_LEN];
 recv_buf: char[] = char[MAX_MSG_LEN];
 
-has_answered: bool = false;
+has_answered: bool = true;
 
 func seperate_lines_chrarr_then_draw(buff: char[]): void {
     DrawText(buff.as_carray(), 30, 30, 14, 0xFFFFFFFF);
@@ -296,6 +296,7 @@ func main(argc: int): void {
     run_game();
 
     // De-Initialization
+    wsclient_send("QUIT");
     wsclient_disconnect();
     CloseWindow();
 }

@@ -126,6 +126,11 @@ class Server:
                     msg = self.calculate_scores()
                     client_sock.send(msg.encode())
                     break
+                elif client_answer == "QUIT":
+                    msg = self.calculate_scores()
+                    client_sock.send(msg.encode())
+                    self.clients.remove(client)
+                    break
                 if self.current_question and not client['answered']:
                     if client_answer == self.current_question['answer']:
                         client['score'] += 10

@@ -761,6 +761,8 @@ proc func_main_
     aloadc 30 ; "style_dark.rgs"
     native 18 ; GuiLoadStyle
     call func_run_game_
+    aloadc 32 ; "QUIT"
+    native 22 ; wsclient_send
     native 24 ; wsclient_disconnect
     native 2 ; CloseWindow
     ret
@@ -786,7 +788,7 @@ __start:
     push 0
     halloc
     gstore 3 ; char[] recv_buf
-    push 0
+    push 1
     gstore 4 ; bool has_answered
     push 600
     gstore 5 ; int screenWidth
@@ -844,3 +846,5 @@ hlt
 @data 0x00a
 @data "style_dark.rgs"
 @data 0x00e
+@data "QUIT"
+@data 0x004
